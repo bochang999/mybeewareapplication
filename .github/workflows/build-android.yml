@@ -1,0 +1,38 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]       # main へ push した時
+  workflow_dispatch:         # GitHub 画面で手動実行も可
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Python & Briefcase
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Briefcase
+        run: |
+          pip install briefcase==0.3.23
+
+      # Android SDK をキャッシュ（無くても動くが速くなる）
+      - uses: actions/cache@v4
+        with:
+          path: ~/.briefcase
+          key: briefcase-android-sdk-v1
+
+      - name: Build APK
+        run: |
+          briefcase build android -v
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: mybeewareapplication-debug-apk
+          path: build/mybeewareapplication/android/gradle/app/build/outputs/apk/debug/*.apk
